@@ -1,0 +1,3 @@
+sarvamai
+whisperx
+git+https://github.com/MahmoudAshraf97/ctc-forced-aligner.git@64293cc6d711e57666c4a8b098e9fd93b381fd88

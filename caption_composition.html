@@ -1,0 +1,60 @@
+<!doctype html>
+<html lang="en" data-composition-variables='[{"id":"input_video","type":"string","label":"Input video","default":""},{"id":"captions","type":"string","label":"Caption pages JSON","default":"[]"},{"id":"style","type":"string","label":"Caption style JSON","default":"{}"}]'>
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=1080, height=1920" />
+  <title>Caption render</title>
+  <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+  <style>
+    html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#000}
+    #root{position:relative;width:100%;height:100%;overflow:hidden;background:#000}
+    #source{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+    #captions{position:absolute;inset:0;pointer-events:none}
+    .page{position:absolute;left:var(--x-margin);right:var(--x-margin);top:var(--y-position);transform:translateY(-50%);text-align:center;opacity:0}
+    .word{display:inline-block;margin:0 .12em;color:var(--fill);font-family:var(--font),sans-serif;font-size:var(--font-size);font-weight:800;line-height:1.05;text-shadow:var(--outline)}
+    .word.active{color:var(--accent)}
+  </style>
+</head>
+<body>
+  <div id="root" data-composition-id="caption-render" data-start="0">
+    <video id="source" class="clip" data-start="0" controls="false" playsinline></video>
+    <div id="captions"></div>
+  </div>
+  <script>
+    const values=window.__hyperframes.getVariables();
+    const style=JSON.parse(values.style||'{}');
+    const pages=JSON.parse(values.captions||'[]');
+    const animation=style.animation||{type:'color_shift'};
+    const video=document.getElementById('source');
+    const root=document.getElementById('root');
+    const captionRoot=document.getElementById('captions');
+    video.src=values.input_video;
+    const position=style.position||{y_percent:55,x_margin_percent:10};
+    root.style.setProperty('--x-margin',position.x_margin_percent+'%');
+    root.style.setProperty('--y-position',position.y_percent+'%');
+    root.style.setProperty('--fill',style.fill||'#FFFFFF');
+    root.style.setProperty('--accent',style.accent||'#FFD300');
+    root.style.setProperty('--font',style.font||'Montserrat ExtraBold');
+    root.style.setProperty('--font-size',(style.font_size_percent_of_height||7)+'vh');
+    root.style.setProperty('--outline',(style.outline?.width||3)+'px '+(style.outline?.width||3)+'px 0 '+(style.outline?.color||'#000000'));
+    const tl=gsap.timeline({paused:true});
+    pages.forEach((page,pageIndex)=>{
+      const pageNode=document.createElement('div'); pageNode.className='page'; pageNode.dataset.start=page.start; pageNode.dataset.duration=Math.max(0.01,page.end-page.start);
+      const words=[];
+      (page.words||[]).forEach((word,index)=>{const node=document.createElement('span');node.className='word';node.textContent=word.word;pageNode.append(node);words.push({node,word})});
+      captionRoot.append(pageNode);
+      tl.set(pageNode,{opacity:1},page.start);
+      tl.set(pageNode,{opacity:0},page.end);
+      words.forEach(({node,word})=>{
+        const start=word.highlight_start??word.start;
+        const end=word.highlight_end??word.end;
+        if(animation.type==='opacity_fade'){tl.set(node,{opacity:1},start);tl.set(node,{opacity:animation.inactive_opacity??0.5},end)}
+        else if(animation.type==='static_line'){tl.set(node,{color:style.fill||'#FFFFFF'},start)}
+        else if(animation.type==='clip_wipe'){tl.fromTo(node,{clipPath:'inset(0 100% 0 0)'},{clipPath:'inset(0 0% 0 0)',duration:(animation.transition_ms||80)/1000,ease:'none'},start)}
+        else {tl.set(node,{color:style.accent||'#FFD300'},start);tl.set(node,{color:style.fill||'#FFFFFF'},end)}
+      });
+    });
+    window.__timelines['caption-render']=tl;
+  </script>
+</body>
+</html>

@@ -1,0 +1,59 @@
+# Environment and secrets
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*.crt
+
+# Python environments and caches
+.venv/
+venv/
+env/
+__pycache__/
+*.py[cod]
+*$py.class
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+
+# Local workflow data and uploaded media
+jobs/
+media/
+*.mp4
+*.mov
+*.webm
+*.wav
+*.mp3
+*.m4a
+*.aac
+
+# Render and model artifacts
+renders/
+render.log
+render-variables.json
+output.mp4
+*.safetensors
+*.bin
+*.pt
+*.pth
+.cache/
+.huggingface/
+
+# Logs and local runtime files
+*.log
+*.pid
+*.tmp
+*.swp
+.DS_Store
+
+# Editors and OS files
+.vscode/
+.idea/
+.history/
+
+# Node tooling caches
+node_modules/
+.npm/
